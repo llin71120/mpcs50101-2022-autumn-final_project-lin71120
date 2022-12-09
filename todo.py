@@ -4,7 +4,6 @@ import pickle
 import argparse
 
 
-#last_id = 0 
 
 class Task:
     """Representation of a task
@@ -16,19 +15,19 @@ class Task:
     """
 
     # static member to store a unique id
-    last_id = 0
+    id_count = 0
     # try:
     #     with open(".task_id.pickle", "rb") as f:
-    #         last_id = pickle.load(f)
+    #         id_count = pickle.load(f)
     # except (FileNotFoundError, EOFError):
-    #     last_id = 0
+    #     id_count = 0
 
-    def __init__(self, name, priority=1, due_date=None):
+    def __init__(self, name, due_date=None, priority=1):
         """Initialize a task with a name and optional priority and due date"""
         self.name = name
 
-        self.last_id += 1
-        self.unique_id = self.last_id
+        self.id_count += 1
+        self.unique_id = self.id_count
 
         self.priority = priority
         self.due_date = due_date
@@ -39,11 +38,23 @@ class Task:
         """Return a string representation of a task"""
         # return f"{self.unique_id} {self.name} {self.priority} {self.due_date}"
         due_date = "-"
+        created_date = "-"
+        completed_date = "-"
+
         if( self.due_date is not None ):
             due_date = str(self.due_date)
+
+        if( self.created_date is not None ):
+            created_date = str(self.created_date)
+
+        if( self.completed_date is not None ):
+            completed_date = str(self.completed_date)
+
         now = datetime.datetime.now()
         age_days = now-self.created_date
-        return ("%-5s%-5s%-11s%-11s%s" % (self.unique_id, f"{age_days.days}d", due_date,self.priority,self.name))
+        #return ("%-5s%-5s%-11s%-11s%s-11s%s-11s%s" % (self.unique_id, f"{age_days.days}d", due_date,self.priority,self.name))
+
+        return ("%-5s%-5s%-11s%-11s%-21s%-33s%s" % (self.unique_id, f"{age_days.days}d", due_date,self.priority,self.name,created_date,completed_date))
 
     def is_overdue(self):
         """Return True if a task is overdue"""
@@ -113,6 +124,7 @@ class Tasks:
     def done(self, id):
         """Mark a task as done by id"""
         for task in self.tasks:
+            #task.completed_date = datetime.datetime.now()
             if task.unique_id == id:
                 task.mark_complete()
                 print(f"Completed task {id}")
@@ -131,10 +143,10 @@ class Tasks:
     def add(self, task):
         """Add a new task"""
         if( len(self.tasks) > 0 ):
-            last_id = self.tasks[len(self.tasks) - 1].unique_id
-            task.unique_id = last_id + 1
+            id_count = self.tasks[len(self.tasks) - 1].unique_id
+            task.unique_id = id_count + 1
         self.tasks.append(task)
-        print("Task added")
+        print("Created Task",task.unique_id)
         #unique id 
     
     def delete (self,task_id):
@@ -151,13 +163,9 @@ class Tasks:
             if not task.is_complete():
                 incomplete_tasks.append(task)
         return incomplete_tasks
-        # s = ""
-        # for task in completed_tasks:
-        #     s += task
-        # return s
+       
 
     def get_all_tasks(self):
-        # return self.tasks.copy()
         return self.tasks
 
     def __str__(self):
@@ -168,11 +176,17 @@ class Tasks:
         return s
 
 def print_tasks(tasks):
-    # sort tasks
-    # tasks.sort(key=lambda x: x.)
+    
     sorted_tasks = sorted(tasks)
-    print("%-5s%-5s%-11s%-11s%s" % ("ID", "Age", "Due Date","Priority","Task"))
-    print("--   ---  --------   --------   ----")
+    print("%-5s%-5s%-11s%-11s%-21s%-33s%s" % ("ID", "Age", "Due Date","Priority","Task","Created","Completed"))
+    print("--   ---  --------   --------   ----                 ---------------------------      -------------------------")
+    for task in sorted_tasks:
+        print(str(task))
+
+def print_report(tasks):
+    sorted_tasks = sorted(tasks)
+    print("%-5s%-5s%-11s%-11s%-21s%-33s%s" % ("ID", "Age", "Due Date","Priority","Task","Created","Completed"))
+    print("--   ---  --------   --------   ----                 ----------------------------      -------------------------")
     for task in sorted_tasks:
         print(str(task))
 
@@ -183,7 +197,6 @@ def main():
     parser.add_argument('--add',type=str,required=False,help='a task string to add to your list')
     parser.add_argument('--priority',type=int,required=False,default=1,help='Priority of task; default value is 1')
     parser.add_argument('--due',type=str,required=False,help='Due date is in dd/mm/yyyy format')
-    # parser.add_argument('--query',type=str,required=False,nargs="+",help='query for current tasks by inputing key word')
     
     # set the arguments for list
     parser.add_argument('--list',required=False,action="store_true",help='list all tasks that have not been completed')
@@ -207,14 +220,14 @@ def main():
     task_list = Tasks()
 
     # Read out arguments (note the types)
-    if args.add: #to add task into the tasks
+    if args.add: #to add task into the tasks 
         priority = 1
         if args.priority:
             priority = args.priority
         due = None
         if args.due:
             due = args.due
-        task_list.add(Task(args.add, priority, due))
+        task_list.add(Task(args.add, due, priority))
     elif args.delete:
         task_list.delete(args.delete) 
     elif args.list:
@@ -222,7 +235,7 @@ def main():
         # print(task_list) 
         print_tasks(task_list.get_incomplete_tasks())
     elif args.report:
-        print_tasks(task_list.get_all_tasks())
+        print_report(task_list.get_all_tasks())
     elif args.query:
         print_tasks(task_list.query(args.query))
     elif args.done:
@@ -242,7 +255,7 @@ def main():
     #save current list into pickle
     task_list.pickle_tasks()
     # with open(".task_id.pickle", "wb") as f:
-    #     pickle.dump(Task.last_id, f)
+    #     pickle.dump(Task.id_count, f)
     exit()
 
     #read out arguments (note the types):
