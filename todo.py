@@ -16,11 +16,7 @@ class Task:
 
     # static member to store a unique id
     id_count = 0
-    # try:
-    #     with open(".task_id.pickle", "rb") as f:
-    #         id_count = pickle.load(f)
-    # except (FileNotFoundError, EOFError):
-    #     id_count = 0
+
 
     def __init__(self, name, due_date=None, priority=1):
         """Initialize a task with a name and optional priority and due date"""
@@ -53,7 +49,7 @@ class Task:
         now = datetime.datetime.now()
         age_days = now-self.created_date
         #return ("%-5s%-5s%-11s%-11s%s-11s%s-11s%s" % (self.unique_id, f"{age_days.days}d", due_date,self.priority,self.name))
-
+        #adding created time and completed time for str return
         return ("%-5s%-5s%-11s%-11s%-21s%-33s%s" % (self.unique_id, f"{age_days.days}d", due_date,self.priority,self.name,created_date,completed_date))
 
     def is_overdue(self):
@@ -132,7 +128,7 @@ class Tasks:
 
     def query(self, query):
         """Return all tasks that match a search word"""
-        #searching: making everything in same case to make sure search both upper and lower case, -i /i match case
+        #query: making everything in same case to make sure search both upper and lower case, -i /i match case
         results = []
         for word in query:
             for task in self.tasks:
@@ -231,8 +227,7 @@ def main():
     elif args.delete:
         task_list.delete(args.delete) 
     elif args.list:
-        # print("to list: ")
-        # print(task_list) 
+         
         print_tasks(task_list.get_incomplete_tasks())
     elif args.report:
         print_report(task_list.get_all_tasks())
@@ -241,29 +236,11 @@ def main():
     elif args.done:
         task_list.done(args.done)
 
-    # elif args.report:
-    #     print (task_list)
-    # elif args.list:
-    #     print 
-        
-
-    #elif args.delete:
-
-    #for t in task_list:
-        #print ('These are all the tasks in my Tasks() object!')
     
     #save current list into pickle
     task_list.pickle_tasks()
-    # with open(".task_id.pickle", "wb") as f:
-    #     pickle.dump(Task.id_count, f)
     exit()
 
-    #read out arguments (note the types):
-    # print ("Add:",args.add)
-    # print ("Due:",args.due)
-    # print ("Priority:",args.priority)
-    # print ("List:",args.list)
-    # print ("Query:",args.query) 
 
 if __name__ == "__main__":
     main()
